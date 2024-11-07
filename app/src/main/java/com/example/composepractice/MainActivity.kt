@@ -7,6 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,14 +22,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,32 +53,74 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composepractice.ui.theme.ComposePracticeTheme
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             var progress by remember {
                 mutableStateOf(0f)
             }
-            Column(modifier = Modifier.fillMaxSize()) {
-                ShowLinearProgress(progress = progress)
-                IncrementProgress(progress = progress) {
-                    if (progress < 1f) {
-                        progress += 0.1f
-                    } else {
-                        progress = 0f
-                    }
+            Scaffold(topBar = {
+                TopAppBar(
+                    title = { Text(text = "Home") },
+                    colors = TopAppBarDefaults.mediumTopAppBarColors()
+                )
+            }, bottomBar = {
+                BottomAppBar(containerColor = colorResource(id = R.color.teal_700)) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_person),
+                        contentDescription = null
+                    )
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_person),
+                        contentDescription = null
+                    )
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_person),
+                        contentDescription = null
+                    )
                 }
-                ProgressValue(progress = progress)
-                MessageCard(Message("Android", "How are you doing?"))
-                Counter()
-                CheckBoxSample()
-                SwitchBoxSample()
-                RadioButtonSample()
-                ProgressBarsSample()
+            }, floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {
+                        Toast.makeText(
+                            this, "Clicking of FAB", Toast.LENGTH_SHORT
+                        ).show()
+                    }, containerColor = colorResource(id = R.color.teal_700)
+                ) {
+
+                }
+            }) {
+                val padding = it.calculateTopPadding() + it.calculateBottomPadding()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .scrollable(
+                            state = ScrollableState { float -> float.absoluteValue },
+                            orientation = Orientation.Vertical
+                        ),
+                ) {
+                    ShowLinearProgress(progress = progress)
+                    IncrementProgress(progress = progress) {
+                        if (progress < 1f) {
+                            progress += 0.1f
+                        } else {
+                            progress = 0f
+                        }
+                    }
+                    ProgressValue(progress = progress)
+                    MessageCard(Message("Android", "How are you doing?"))
+                    Counter()
+                    CheckBoxSample()
+                    SwitchBoxSample()
+                    RadioButtonSample()
+                    ProgressBarsSample()
+                }
             }
         }
     }
@@ -181,23 +234,36 @@ fun Counter() {
 
 @Composable
 fun MessageCard(msg: Message) {
-    Row(modifier = Modifier.padding(10.dp, 20.dp)) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_person),
-            contentDescription = "sender Image",
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(
-                    color = colorResource(id = R.color.teal_700),
-                    shape = MaterialTheme.shapes.medium
-                )
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Column {
-            Text(text = msg.name)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = msg.text)
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .padding(10.dp),
+        shape = MaterialTheme.shapes.medium,
+        color = colorResource(id = R.color.teal_200),
+        shadowElevation = 30.dp
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(start = 10.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_person),
+                contentDescription = "sender Image",
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(
+                        color = colorResource(id = R.color.teal_700),
+                        shape = MaterialTheme.shapes.medium
+                    )
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = msg.name)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = msg.text)
+            }
         }
     }
 }
