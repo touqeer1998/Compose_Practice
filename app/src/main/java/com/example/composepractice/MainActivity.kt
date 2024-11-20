@@ -1,29 +1,36 @@
 package com.example.composepractice
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,7 +40,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -49,16 +55,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.composepractice.ui.theme.ComposePracticeTheme
-import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
+    val messages = listOf(
+        Message("Carl", "Hello"),
+        Message("Sandy", "Hi"),
+        Message("Carl", "Whats up"),
+        Message("Sandy", "Iam fine, What about you?"),
+        Message("Carl", "I am fine too"),
+        Message("Sandy", "Great"),
+        Message("Sandy", "Great"),
+        Message("Sandy", "Great"),
+        Message("Sandy", "Great"),
+        Message("Sandy", "Great"),
+        Message("Sandy", "Great"),
+    )
+
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -96,30 +116,38 @@ class MainActivity : ComponentActivity() {
 
                 }
             }) {
-                val padding = it.calculateTopPadding() + it.calculateBottomPadding()
-                Column(
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(150.dp),
                     modifier = Modifier
                         .fillMaxSize()
-                        .scrollable(
-                            state = ScrollableState { float -> float.absoluteValue },
-                            orientation = Orientation.Vertical
-                        ),
+                        .padding(
+                            top = it.calculateTopPadding(), bottom = it.calculateBottomPadding()
+                        )
                 ) {
-                    ShowLinearProgress(progress = progress)
-                    IncrementProgress(progress = progress) {
-                        if (progress < 1f) {
-                            progress += 0.1f
-                        } else {
-                            progress = 0f
-                        }
+//                    ShowLinearProgress(progress = progress)
+//                    IncrementProgress(progress = progress) {
+//                        if (progress < 1f) {
+//                            progress += 0.1f
+//                        } else {
+//                            progress = 0f
+//                        }
+//                    }
+//                    ProgressValue(progress = progress)
+//                    stickyHeader {
+//                        Text(
+//                            text = "This is Sticky Header",
+//                            fontSize = 18.sp,
+//                            fontWeight = FontWeight.Bold
+//                        )
+//                    }
+                    items(messages.size) { index ->
+                        MessageCard(msg = messages[index])
                     }
-                    ProgressValue(progress = progress)
-                    MessageCard(Message("Android", "How are you doing?"))
-                    Counter()
-                    CheckBoxSample()
-                    SwitchBoxSample()
-                    RadioButtonSample()
-                    ProgressBarsSample()
+//                    Counter()
+//                    CheckBoxSample()
+//                    SwitchBoxSample()
+//                    RadioButtonSample()
+//                    ProgressBarsSample()
                 }
             }
         }
@@ -233,19 +261,30 @@ fun Counter() {
 }
 
 @Composable
-fun MessageCard(msg: Message) {
-    Surface(
+fun MessageCard(msg: Message, context: Context = LocalContext.current) {
+    Card(
         modifier = Modifier
+            .padding(10.dp)
+            .height(80.dp)
             .fillMaxWidth()
-            .height(100.dp)
-            .padding(10.dp),
-        shape = MaterialTheme.shapes.medium,
-        color = colorResource(id = R.color.teal_200),
-        shadowElevation = 30.dp
+            .clickable {
+                Toast
+                    .makeText(context, msg.text, Toast.LENGTH_SHORT)
+                    .show()
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = colorResource(id = R.color.white), contentColor = colorResource(
+                id = R.color.teal_700
+            )
+        ),
+        elevation = CardDefaults.cardElevation(10.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 10.dp)
+            modifier = Modifier
+                .padding(start = 10.dp)
+                .fillMaxHeight()
+                .fillMaxWidth()
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_person),
@@ -260,9 +299,9 @@ fun MessageCard(msg: Message) {
             )
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = msg.name)
+                Text(text = msg.name, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = msg.text)
+                Text(modifier = Modifier.width(intrinsicSize = IntrinsicSize.Max), text = msg.text, fontSize = 14.sp, maxLines = 1)
             }
         }
     }
